@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MathPro UVM</title>
+<script>
+window.MathJax = {
+  tex: { inlineMath:[['$','$'],['\\(','\\)']], displayMath:[['$$','$$'],['\\[','\\]']] },
+  options: { skipHtmlTags:['script','noscript','style','textarea','pre'] }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8f9fc;
+  --white: #ffffff;
+  --border: #e4e8f0;
+  --border2: #d0d7e8;
+  --text: #1a1f36;
+  --muted: #6b7494;
+  --light: #f0f3fa;
+
+  --calc: #4f46e5;
+  --calc-bg: #eef2ff;
+  --calc-border: #c7d2fe;
+
+  --alg: #0891b2;
+  --alg-bg: #ecfeff;
+  --alg-border: #a5f3fc;
+
+  --green: #059669;
+  --green-bg: #ecfdf5;
+  --green-border: #a7f3d0;
+
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --red-border: #fecaca;
+
+  --yellow: #d97706;
+  --yellow-bg: #fffbeb;
+  --yellow-border: #fde68a;
+
+  --radius: 14px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.05);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.10);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',sans-serif; min-height:100vh; }
+
+/* ── HEADER ── */
+.topbar {
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:18px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+}
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-icon {
+  width:34px; height:34px; border-radius:9px;
+  background:linear-gradient(135deg,var(--calc),#818cf8);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; font-weight:800; color:#fff;
+}
+.logo-text { font-size:16px; font-weight:800; color:var(--text); }
+.logo-sub { font-size:11px; color:var(--muted); font-weight:500; }
+.score-row { display:flex; gap:8px; }
+.score-chip {
+  display:flex; align-items:center; gap:6px;
+  background:var(--light); border:1px solid var(--border);
+  border-radius:999px; padding:5px 14px;
+  font-size:12px; font-weight:700; color:var(--text);
+}
+.dot { width:7px; height:7px; border-radius:50%; }
+.dg{background:var(--green)} .dr{background:var(--red)} .da{background:var(--calc)}
+
+/* ── HERO ── */
+.hero {
+  background:linear-gradient(135deg,#4f46e5 0%,#0891b2 100%);
+  padding:48px 24px 56px;
+  text-align:center; color:#fff;
+}
+.hero h1 { font-size:clamp(26px,5vw,42px); font-weight:800; line-height:1.15; margin-bottom:12px; }
+.hero p { font-size:15px; opacity:.85; max-width:480px; margin:0 auto; line-height:1.6; }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width:860px; margin:0 auto; padding:32px 16px 60px; }
+
+/* ── SUBJECT PICKER ── */
+.section-title {
+  font-size:12px; font-weight:700; letter-spacing:2px;
+  text-transform:uppercase; color:var(--muted); margin-bottom:14px;
+}
+.subject-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:32px; }
+.subject-card {
+  background:var(--white); border:2px solid var(--border);
+  border-radius:16px; padding:22px 20px; cursor:pointer;
+  transition:all .2s; text-align:center;
+}
+.subject-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+.subject-card.active-calc { border-color:var(--calc); background:var(--calc-bg); }
+.subject-card.active-alg  { border-color:var(--alg);  background:var(--alg-bg);  }
+.subject-card.active-calc .s-icon { background:linear-gradient(135deg,var(--calc),#818cf8); }
+.subject-card.active-alg  .s-icon { background:linear-gradient(135deg,var(--alg),#06b6d4); }
+.s-icon {
+  width:48px; height:48px; border-radius:12px;
+  background:var(--light); display:flex; align-items:center;
+  justify-content:center; font-size:22px; margin:0 auto 12px;
+  transition:background .2s;
+}
+.s-name { font-size:16px; font-weight:700; color:var(--text); }
+.s-desc { font-size:12px; color:var(--muted); margin-top:4px; }
+
+/* ── TOPIC PILLS ── */
+.topic-section { margin-bottom:28px; display:none; }
+.topic-section.visible { display:block; }
+.topic-pills { display:flex; flex-wrap:wrap; gap:8px; }
+.topic-pill {
+  background:var(--white); border:1.5px solid var(--border);
+  color:var(--muted); border-radius:999px;
+  padding:7px 16px; font-family:inherit;
+  font-size:13px; font-weight:600; cursor:pointer; transition:all .2s;
+}
+.topic-pill:hover { border-color:var(--calc); color:var(--text); }
+.topic-pill.tp-calc.active { background:var(--calc); border-color:var(--calc); color:#fff; }
+.topic-pill.tp-alg.active  { background:var(--alg);  border-color:var(--alg);  color:#fff; }
+
+/* ── EXERCISE CARD ── */
+.ex-section { display:none; }
+.ex-section.visible { display:block; }
+
+.ex-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius); padding:28px 24px;
+  box-shadow:var(--shadow); margin-bottom:16px;
+  position:relative; overflow:hidden;
+}
+.ex-card-accent {
+  position:absolute; top:0;left:0;right:0; height:4px;
+  background:linear-gradient(90deg,var(--calc),var(--alg));
+}
+.ex-card-accent.alg { background:linear-gradient(90deg,var(--alg),#06b6d4); }
+
+.ex-tag {
+  display:inline-block;
+  font-size:11px; font-weight:700; letter-spacing:1.5px;
+  text-transform:uppercase; border-radius:999px;
+  padding:3px 12px; margin-bottom:16px;
+}
+.tag-calc { background:var(--calc-bg); color:var(--calc); border:1px solid var(--calc-border); }
+.tag-alg  { background:var(--alg-bg);  color:var(--alg);  border:1px solid var(--alg-border);  }
+
+.ex-question {
+  font-size:clamp(16px,3vw,22px); font-weight:600;
+  line-height:1.7; color:var(--text); margin-bottom:24px; min-height:50px;
+}
+
+.input-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.answer-input {
+  flex:1; min-width:120px;
+  background:var(--light); border:2px solid var(--border);
+  border-radius:10px; color:var(--text);
+  font-family:'JetBrains Mono',monospace; font-size:16px;
+  padding:11px 16px; outline:none; transition:all .2s;
+}
+.answer-input:focus { border-color:var(--calc); background:#fff; box-shadow:0 0 0 3px rgba(79,70,229,.08); }
+.answer-input.correct { border-color:var(--green); background:var(--green-bg); }
+.answer-input.wrong   { border-color:var(--red);   background:var(--red-bg); }
+
+.btn {
+  border:none; border-radius:10px; padding:11px 22px;
+  font-family:inherit; font-size:14px; font-weight:700;
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.btn-primary { background:var(--calc); color:#fff; }
+.btn-primary:hover { background:#4338ca; }
+.btn-primary:active { transform:scale(.97); }
+.btn-secondary { background:var(--light); color:var(--text); border:1.5px solid var(--border); }
+.btn-secondary:hover { border-color:var(--border2); }
+.btn-hint { background:var(--yellow-bg); color:var(--yellow); border:1.5px solid var(--yellow-border); }
+.btn-hint:hover { background:#fef3c7; }
+
+/* ── FEEDBACK ── */
+.feedback { margin-top:20px; border-radius:12px; padding:20px; display:none; animation:fadeUp .3s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.feedback.show-ok  { display:block; background:var(--green-bg);  border:1.5px solid var(--green-border); }
+.feedback.show-err { display:block; background:var(--red-bg);    border:1.5px solid var(--red-border); }
+.fb-title { font-size:15px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.show-ok  .fb-title { color:var(--green); }
+.show-err .fb-title { color:var(--red); }
+
+.steps-list { display:flex; flex-direction:column; gap:10px; }
+.step {
+  display:flex; gap:12px; align-items:flex-start;
+  background:#fff; border:1px solid var(--border);
+  border-radius:10px; padding:12px 14px;
+}
+.step-num {
+  border-radius:6px; padding:3px 9px;
+  font-size:11px; font-weight:700; flex-shrink:0; margin-top:2px;
+  font-family:'JetBrains Mono',monospace; line-height:1.4;
+}
+.show-ok  .step-num { background:var(--green-bg); color:var(--green); border:1px solid var(--green-border); }
+.show-err .step-num { background:var(--red-bg);   color:var(--red);   border:1px solid var(--red-border); }
+.step-text { font-size:14px; color:var(--text); line-height:1.7; flex:1; }
+
+.btn-row { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+
+/* ── RESOURCES CARD ── */
+.res-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius); padding:22px 24px;
+  box-shadow:var(--shadow); margin-bottom:16px;
+}
+.res-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.res-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.res-item {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+  text-decoration:none; color:var(--text); transition:all .2s;
+  background:var(--light);
+}
+.res-item:hover { border-color:var(--calc); background:var(--calc-bg); transform:translateY(-1px); }
+.res-icon { font-size:18px; flex-shrink:0; }
+.res-name { font-size:12px; font-weight:700; color:var(--text); }
+.res-type { font-size:11px; color:var(--muted); }
+
+/* ── PROGRESS ── */
+.prog-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:12px; padding:16px 20px;
+  box-shadow:var(--shadow); margin-bottom:16px;
+  display:flex; align-items:center; gap:16px;
+}
+.prog-labels { flex:1; }
+.prog-top { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:8px; }
+.prog-bar { height:6px; background:var(--light); border-radius:999px; overflow:hidden; }
+.prog-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--calc),var(--alg)); transition:width .4s ease; }
+
+/* ── HISTORY ── */
+.hist-card {
+  background:var(--white); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px 24px;
+  box-shadow:var(--shadow);
+}
+.hist-list { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.hist-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 14px; border-radius:10px; border:1px solid var(--border);
+  font-size:13px; background:var(--light);
+}
+.hist-item.hok { border-color:var(--green-border); background:var(--green-bg); }
+.hist-item.herr{ border-color:var(--red-border);   background:var(--red-bg); }
+.hist-q { flex:1; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hist-a { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; }
+.hok .hist-a { color:var(--green); }
+.herr .hist-a { color:var(--red); }
+.empty-msg { color:var(--muted); font-size:13px; text-align:center; padding:20px 0; }
+
+@media(max-width:520px){
+  .subject-grid{grid-template-columns:1fr;}
+  .res-grid{grid-template-columns:1fr;}
+  .topbar .score-row{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">∫</div>
+    <div>
+      <div class="logo-text">MathPro</div>
+      <div class="logo-sub">UVM · Ingeniería Biomédica</div>
+    </div>
+  </div>
+  <div class="score-row">
+    <div class="score-chip"><span class="dot dg"></span>Aciertos: <strong id="sc">0</strong></div>
+    <div class="score-chip"><span class="dot dr"></span>Errores: <strong id="sw">0</strong></div>
+  </div>
+</div>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <h1>Practica Matemáticas<br>paso a paso</h1>
+  <p>Ejercicios basados en tu temario de Cálculo y Álgebra Lineal con soluciones detalladas, videos y libros recomendados.</p>
+</div>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Subject picker -->
+  <div class="section-title">1. Elige la materia</div>
+  <div class="subject-grid">
+    <div class="subject-card" id="card-calc" onclick="selectSubject('calc')">
+      <div class="s-icon">📐</div>
+      <div class="s-name">Cálculo</div>
+      <div class="s-desc">Límites, derivadas, integrales y más</div>
+    </div>
+    <div class="subject-card" id="card-alg" onclick="selectSubject('alg')">
+      <div class="s-icon">🧮</div>
+      <div class="s-name">Álgebra Lineal</div>
+      <div class="s-desc">Matrices, sistemas y vectores</div>
+    </div>
+  </div>
+
+  <!-- Calc topics -->
+  <div class="topic-section" id="topics-calc">
+    <div class="section-title">2. Elige el tema de Cálculo</div>
+    <div class="topic-pills" id="pills-calc"></div>
+  </div>
+
+  <!-- Alg topics -->
+  <div class="topic-section" id="topics-alg">
+    <div class="section-title">2. Elige el tema de Álgebra Lineal</div>
+    <div class="topic-pills" id="pills-alg"></div>
+  </div>
+
+  <!-- Exercise section -->
+  <div class="ex-section" id="ex-section">
+
+    <!-- Progress -->
+    <div class="prog-card">
+      <div class="prog-labels">
+        <div class="prog-top"><span>Progreso de sesión</span><span id="prog-txt">0 / 10</span></div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Exercise card -->
+    <div class="ex-card" id="ex-card">
+      <div class="ex-card-accent" id="ex-accent"></div>
+      <div class="ex-tag" id="ex-tag"></div>
+      <div class="ex-question" id="ex-q"></div>
+      <div class="input-row">
+        <input class="answer-input" id="ans" type="text" placeholder="Escribe tu respuesta..." autocomplete="off"/>
+        <button class="btn btn-primary" onclick="checkAns()">Verificar</button>
+      </div>
+      <div class="feedback" id="fb">
+        <div class="fb-title" id="fb-title"></div>
+        <div class="steps-list" id="fb-steps"></div>
+      </div>
+      <div class="btn-row" id="btn-row" style="display:none">
+        <button class="btn btn-primary" onclick="nextEx()">Siguiente ejercicio →</button>
+        <button class="btn btn-hint" onclick="showSol()">💡 Ver solución completa</button>
+      </div>
+    </div>
+
+    <!-- Resources card -->
+    <div class="res-card" id="res-card"></div>
+
+    <!-- History -->
+    <div class="hist-card">
+      <div class="section-title">Historial de respuestas</div>
+      <div class="hist-list" id="hist-list">
+        <div class="empty-msg">Aún no has respondido ningún ejercicio.</div>
+      </div>
+    </div>
+
+  </div><!-- /ex-section -->
+</div><!-- /main -->
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+const RESOURCES = {
+  "Funciones y Variables": {
+    videos:[
+      {name:"Introducción a funciones", url:"https://www.youtube.com/watch?v=kvGsIo1TmsM", by:"Khan Academy ES"},
+      {name:"Funciones exponenciales y logarítmicas", url:"https://www.youtube.com/watch?v=28C_A9i8Zss", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Stewart – Cálculo (Cap. 1)", url:"https://archive.org/search?query=stewart+calculo", by:"Clásico del cálculo"},
+      {name:"Larson – Calculus (Ch. 1)", url:"https://archive.org/search?query=larson+calculus", by:"Referencia UVM"},
+    ]
+  },
+  "Límites y Continuidad": {
+    videos:[
+      {name:"¿Qué es un límite?", url:"https://www.youtube.com/watch?v=riXcZT2ICjA", by:"3Blue1Brown (sub. ES)"},
+      {name:"Límites – ejercicios resueltos", url:"https://www.youtube.com/watch?v=4mX2WPt0hNI", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Leithold – El Cálculo 7ª ed. (Cap. 2)", url:"https://archive.org/search?query=leithold+calculo", by:"Referencia UVM"},
+      {name:"Larson – Calculus (Ch. 2)", url:"https://archive.org/search?query=larson+calculus", by:"Larson & Edwards"},
+    ]
+  },
+  "Derivadas": {
+    videos:[
+      {name:"La derivada – intuición visual", url:"https://www.youtube.com/watch?v=9vKqVkMQHKk", by:"3Blue1Brown"},
+      {name:"Reglas de derivación completas", url:"https://www.youtube.com/watch?v=IvLpN1G1Ncg", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Stewart – Cálculo (Cap. 3)", url:"https://archive.org/search?query=stewart+calculo", by:"Stewart, James"},
+      {name:"Leithold – El Cálculo (Cap. 3-4)", url:"https://archive.org/search?query=leithold+calculo", by:"Referencia UVM"},
+    ]
+  },
+  "La Diferencial": {
+    videos:[
+      {name:"Diferenciales y aproximación lineal", url:"https://www.youtube.com/watch?v=BdkJ9nvZVvU", by:"Khan Academy ES"},
+      {name:"Diferenciales – ejercicios", url:"https://www.youtube.com/watch?v=AO1P7nCMJiQ", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Stewart – Cálculo (Cap. 3.10)", url:"https://archive.org/search?query=stewart+calculo", by:"Stewart, James"},
+    ]
+  },
+  "Integral Indefinida": {
+    videos:[
+      {name:"Introducción a las integrales", url:"https://www.youtube.com/watch?v=rfG8ce4nNh0", by:"3Blue1Brown"},
+      {name:"Técnicas de integración", url:"https://www.youtube.com/watch?v=2V0ChAUnJxU", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Stewart – Cálculo (Cap. 5)", url:"https://archive.org/search?query=stewart+calculo", by:"Stewart, James"},
+      {name:"Larson – Calculus (Ch. 5)", url:"https://archive.org/search?query=larson+calculus", by:"Larson & Edwards"},
+    ]
+  },
+  "Integral Definida": {
+    videos:[
+      {name:"La integral definida y el área", url:"https://www.youtube.com/watch?v=0RdI3-8G4Fs", by:"3Blue1Brown"},
+      {name:"Teorema Fundamental del Cálculo", url:"https://www.youtube.com/watch?v=FnJqaIESC2s", by:"Khan Academy ES"},
+    ],
+    books:[
+      {name:"Stewart – Cálculo (Cap. 6)", url:"https://archive.org/search?query=stewart+calculo", by:"Stewart, James"},
+    ]
+  },
+  "Matrices y Determinantes": {
+    videos:[
+      {name:"Matrices y operaciones básicas", url:"https://www.youtube.com/watch?v=rowWM-MijXU", by:"3Blue1Brown"},
+      {name:"Determinantes – ejercicios 2×2 y 3×3", url:"https://www.youtube.com/watch?v=Ip3X9LOh2dk", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Lay – Álgebra Lineal (Cap. 1-2)", url:"https://archive.org/search?query=lay+algebra+lineal", by:"Referencia UVM"},
+      {name:"Grossman – Álgebra Lineal", url:"https://archive.org/search?query=grossman+algebra+lineal", by:"Stanley Grossman"},
+    ]
+  },
+  "Sistemas de Ecuaciones": {
+    videos:[
+      {name:"Eliminación Gauss-Jordan", url:"https://www.youtube.com/watch?v=2tlwSqblrvU", by:"Khan Academy ES"},
+      {name:"Regla de Cramer", url:"https://www.youtube.com/watch?v=aKX5_DucNq8", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Lay – Álgebra Lineal (Cap. 1)", url:"https://archive.org/search?query=lay+algebra+lineal", by:"Lay, David"},
+      {name:"Barrera – Álgebra Lineal", url:"https://archive.org/search?query=barrera+algebra+lineal", by:"Referencia UVM"},
+    ]
+  },
+  "Espacio Euclidiano": {
+    videos:[
+      {name:"Geometría analítica – distancia y pendiente", url:"https://www.youtube.com/watch?v=WLFX6O7m4oU", by:"Khan Academy ES"},
+      {name:"Programación Lineal – método gráfico", url:"https://www.youtube.com/watch?v=M4K6HYLHREQ", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Lay – Álgebra Lineal (Cap. 4)", url:"https://archive.org/search?query=lay+algebra+lineal", by:"Lay, David"},
+    ]
+  },
+  "Espacio Vectorial": {
+    videos:[
+      {name:"Espacios vectoriales – intuición", url:"https://www.youtube.com/watch?v=TgKwz5Ikpc8", by:"3Blue1Brown"},
+      {name:"Producto punto y producto cruz", url:"https://www.youtube.com/watch?v=VsJNVgm5BAY", by:"Matemáticas profe Alex"},
+    ],
+    books:[
+      {name:"Lay – Álgebra Lineal (Cap. 4)", url:"https://archive.org/search?query=lay+algebra+lineal", by:"Lay, David"},
+      {name:"Grossman – Álgebra Lineal (Cap. 3)", url:"https://archive.org/search?query=grossman+algebra+lineal", by:"Stanley Grossman"},
+    ]
+  }
+};
+
+const TOPICS = {
+  calc: {
+    "Funciones y Variables": [
+      { tag:"Funciones · Evaluación", q:"Si $f(x) = 3x^2 - 2x + 1$, calcula $f(2)$", a:"9", alt:[],
+        steps:["Sustituimos $x = 2$ directamente en la función:","$f(2) = 3(2)^2 - 2(2) + 1$","$= 3 \\cdot 4 - 4 + 1 = 12 - 4 + 1$","$= \\boxed{9}$"] },
+      { tag:"Funciones · Composición", q:"Si $f(x)=2x+1$ y $g(x)=x^2$, calcula $(f \\circ g)(3)$", a:"19", alt:[],
+        steps:["$(f\\circ g)(x) = f(g(x))$: primero aplicamos $g$, luego $f$","$g(3) = 3^2 = 9$","$f(9) = 2(9)+1 = 18+1 = \\boxed{19}$"] },
+      { tag:"Funciones · Logaritmos", q:"Calcula $\\log_2(32)$", a:"5", alt:[],
+        steps:["Buscamos $n$ tal que $2^n = 32$","$2^1=2,\\; 2^2=4,\\; 2^3=8,\\; 2^4=16,\\; 2^5=32$ ✓","$\\therefore \\log_2(32) = \\boxed{5}$"] },
+      { tag:"Funciones · Exponencial", q:"Simplifica: $e^{\\ln 7}$", a:"7", alt:[],
+        steps:["Propiedad fundamental: $e^{\\ln x} = x$ para todo $x > 0$","Las funciones $e^x$ y $\\ln x$ son inversas entre sí","$e^{\\ln 7} = \\boxed{7}$"] },
+    ],
+    "Límites y Continuidad": [
+      { tag:"Límites · Directos", q:"$\\displaystyle\\lim_{x \\to 3}\\left(x^2 - 2x + 1\\right)$", a:"4", alt:[],
+        steps:["La función es un polinomio → continua en todo $\\mathbb{R}$","Podemos sustituir directamente $x=3$:","$= 3^2 - 2(3) + 1 = 9 - 6 + 1 = \\boxed{4}$"] },
+      { tag:"Límites · Forma indeterminada", q:"$\\displaystyle\\lim_{x \\to 2} \\dfrac{x^2 - 4}{x - 2}$", a:"4", alt:[],
+        steps:["Sustituyendo $x=2$ obtenemos $\\frac{0}{0}$ — forma indeterminada","Factorizamos: $x^2-4 = (x+2)(x-2)$","$\\dfrac{(x+2)\\cancel{(x-2)}}{\\cancel{x-2}} = x+2$ para $x\\neq 2$","$\\lim_{x\\to 2}(x+2) = 4$ → $\\boxed{4}$"] },
+      { tag:"Límites · L'Hôpital", q:"$\\displaystyle\\lim_{x \\to 0} \\dfrac{\\sin x}{x}$", a:"1", alt:[],
+        steps:["Forma $\\frac{0}{0}$, aplicamos Regla de L'Hôpital:","Derivamos numerador y denominador por separado","$\\displaystyle\\lim_{x\\to 0}\\frac{\\cos x}{1} = \\cos(0) = \\boxed{1}$","Este es uno de los límites fundamentales del cálculo"] },
+      { tag:"Límites · Infinito", q:"$\\displaystyle\\lim_{x \\to \\infty} \\dfrac{3x^2+1}{x^2-5}$", a:"3", alt:[],
+        steps:["Dividimos numerador y denominador entre $x^2$ (máxima potencia):","$\\dfrac{3 + \\frac{1}{x^2}}{1 - \\frac{5}{x^2}}$","Cuando $x\\to\\infty$ los términos $\\frac{1}{x^2}\\to 0$","$= \\dfrac{3+0}{1-0} = \\boxed{3}$"] },
+    ],
+    "Derivadas": [
+      { tag:"Derivadas · Regla de la potencia", q:"$\\dfrac{d}{dx}\\left[4x^5 - 3x^2 + 7\\right]$", a:"20x^4-6x", alt:["20x^4 - 6x"],
+        steps:["Regla: $\\dfrac{d}{dx}[x^n] = nx^{n-1}$ (regla de la potencia)","$\\dfrac{d}{dx}[4x^5] = 4\\cdot 5x^4 = 20x^4$","$\\dfrac{d}{dx}[-3x^2] = -3\\cdot 2x = -6x$","$\\dfrac{d}{dx}[7] = 0$ (constante)","Resultado: $\\boxed{20x^4 - 6x}$"] },
+      { tag:"Derivadas · Regla del producto", q:"Deriva $f(x) = x^2 \\cdot \\sin x$", a:"2xsinx+x^2cosx", alt:["x^2cosx+2xsinx"],
+        steps:["Regla del producto: $(u\\cdot v)' = u'v + uv'$","$u = x^2 \\Rightarrow u' = 2x$","$v = \\sin x \\Rightarrow v' = \\cos x$","$f'(x) = 2x\\sin x + x^2\\cos x$"] },
+      { tag:"Derivadas · Regla de la cadena", q:"Deriva $f(x) = (3x+1)^4$", a:"12(3x+1)^3", alt:["12(3x+1)³"],
+        steps:["Regla de la cadena: $[g(h(x))]' = g'(h(x))\\cdot h'(x)$","Sea $u = 3x+1$ (función interior)","$\\dfrac{d}{du}[u^4] = 4u^3$ y $\\dfrac{d}{dx}[3x+1] = 3$","$f'(x) = 4(3x+1)^3\\cdot 3 = \\boxed{12(3x+1)^3}$"] },
+      { tag:"Derivadas · Máximos y mínimos", q:"La función $f(x)=x^2-4x+3$ tiene un mínimo en $x=$", a:"2", alt:[],
+        steps:["Para hallar extremos, igualamos la derivada a cero: $f'(x)=0$","$f'(x) = 2x - 4 = 0$","$x = \\boxed{2}$","Confirmación: $f''(x)=2>0$ → mínimo relativo ✓"] },
+      { tag:"Derivadas · Derivación implícita", q:"Si $x^2 + y^2 = 25$, ¿cuánto vale $\\dfrac{dy}{dx}$?", a:"-x/y", alt:["-x/y"],
+        steps:["Derivamos ambos lados respecto a $x$ (recordando que $y$ depende de $x$):","$\\dfrac{d}{dx}[x^2] + \\dfrac{d}{dx}[y^2] = 0$","$2x + 2y\\dfrac{dy}{dx} = 0$","$\\dfrac{dy}{dx} = \\boxed{-\\dfrac{x}{y}}$"] },
+    ],
+    "La Diferencial": [
+      { tag:"Diferencial · Definición", q:"Si $f(x)=x^3$, expresa $df$ en términos de $dx$", a:"3x^2 dx", alt:["3x²dx","3x^2dx"],
+        steps:["La diferencial se define como $df = f'(x)\\,dx$","Calculamos la derivada: $f'(x) = 3x^2$","Entonces: $df = \\boxed{3x^2\\,dx}$"] },
+      { tag:"Diferencial · Aproximación", q:"Usando la diferencial, $\\sqrt{4.1}\\approx$", a:"2.025", alt:["2,025"],
+        steps:["Tomamos $f(x)=\\sqrt{x}$ con $x_0=4$ (raíz conocida: $f(4)=2$)","$f'(x)=\\dfrac{1}{2\\sqrt{x}} \\Rightarrow f'(4)=\\dfrac{1}{4}$","Aproximación lineal: $f(4.1)\\approx f(4)+f'(4)\\cdot\\Delta x$","$= 2 + \\dfrac{1}{4}(0.1) = 2 + 0.025 = \\boxed{2.025}$"] },
+    ],
+    "Integral Indefinida": [
+      { tag:"Integral · Potencia", q:"$\\displaystyle\\int 6x^2\\,dx$", a:"2x^3+C", alt:["2x^3+c","2x³+C"],
+        steps:["Regla de la potencia para integrales: $\\int x^n\\,dx = \\dfrac{x^{n+1}}{n+1}+C$","$\\int 6x^2\\,dx = 6\\cdot\\dfrac{x^3}{3}+C$","$= \\boxed{2x^3+C}$"] },
+      { tag:"Integral · Sustitución", q:"$\\displaystyle\\int 2x(x^2+1)^3\\,dx$", a:"(x^2+1)^4/4+C", alt:["(x²+1)⁴/4+C"],
+        steps:["Identificamos la sustitución: sea $u = x^2+1$","Diferenciamos: $du = 2x\\,dx$ — aparece exactamente en la integral","La integral se convierte en $\\int u^3\\,du$","$= \\dfrac{u^4}{4}+C$","Regresamos: $\\boxed{\\dfrac{(x^2+1)^4}{4}+C}$"] },
+      { tag:"Integral · Trigonométrica", q:"$\\displaystyle\\int \\sin(x)\\,dx$", a:"-cos(x)+C", alt:["-cosx+C","-cos x+C","-cos(x)+c"],
+        steps:["Fórmula estándar: $\\int \\sin(x)\\,dx = -\\cos(x)+C$","Verificación derivando: $\\dfrac{d}{dx}[-\\cos x] = \\sin x$ ✓","Respuesta: $\\boxed{-\\cos(x)+C}$"] },
+      { tag:"Integral · Por partes", q:"$\\displaystyle\\int x\\,e^x\\,dx$ — ¿qué técnica se usa?", a:"por partes", alt:["integracion por partes","partes","integración por partes"],
+        steps:["Se usa **integración por partes**: $\\int u\\,dv = uv - \\int v\\,du$","Elegimos: $u = x \\Rightarrow du = dx$","$dv = e^x\\,dx \\Rightarrow v = e^x$","$\\int xe^x\\,dx = xe^x - \\int e^x\\,dx = xe^x - e^x + C$","$= e^x(x-1)+C$"] },
+    ],
+    "Integral Definida": [
+      { tag:"Integral Definida · Teorema Fundamental", q:"$\\displaystyle\\int_0^3 x^2\\,dx$", a:"9", alt:[],
+        steps:["Antiderivada de $x^2$ es $\\dfrac{x^3}{3}$","Aplicamos el Teorema Fundamental del Cálculo:","$\\left[\\dfrac{x^3}{3}\\right]_0^3 = \\dfrac{3^3}{3} - \\dfrac{0^3}{3}$","$= \\dfrac{27}{3} - 0 = \\boxed{9}$"] },
+      { tag:"Integral Definida · Área bajo la curva", q:"Área bajo $f(x)=2x$ de $x=0$ a $x=4$", a:"16", alt:[],
+        steps:["$A = \\displaystyle\\int_0^4 2x\\,dx = \\left[x^2\\right]_0^4$","$= 4^2 - 0^2 = 16 - 0$","$A = \\boxed{16}$ unidades cuadradas"] },
+      { tag:"Integral Definida · Propiedades", q:"Si $\\int_0^5 f\\,dx=10$ y $\\int_0^3 f\\,dx=4$, entonces $\\int_3^5 f\\,dx=$", a:"6", alt:[],
+        steps:["Propiedad de aditividad: $\\displaystyle\\int_a^c = \\int_a^b + \\int_b^c$","$\\displaystyle\\int_0^5 = \\int_0^3 + \\int_3^5$","Despejamos: $\\displaystyle\\int_3^5 = 10 - 4 = \\boxed{6}$"] },
+    ],
+  },
+
+  alg: {
+    "Matrices y Determinantes": [
+      { tag:"Matrices · Suma", q:"$A=\\begin{pmatrix}1&2\\\\3&4\\end{pmatrix}$, $B=\\begin{pmatrix}5&6\\\\7&8\\end{pmatrix}$. El elemento $(A+B)_{12}$ es:", a:"8", alt:[],
+        steps:["Las matrices se suman elemento a elemento:","$(A+B)_{ij} = A_{ij}+B_{ij}$","$(A+B)_{12} = A_{12}+B_{12} = 2+6 = \\boxed{8}$"] },
+      { tag:"Matrices · Multiplicación", q:"$A=\\begin{pmatrix}1&0\\\\0&2\\end{pmatrix}$, $B=\\begin{pmatrix}3\\\\4\\end{pmatrix}$. El elemento $(AB)_{21}$ es:", a:"8", alt:[],
+        steps:["$(AB)_{21}$ = (fila 2 de $A$) · (columna 1 de $B$)","Fila 2 de $A$: $(0,\\;2)$  ·  Columna 1 de $B$: $(3,\\;4)$","$(0)(3)+(2)(4) = 0+8 = \\boxed{8}$"] },
+      { tag:"Determinantes · 2×2", q:"$\\det\\begin{pmatrix}3&1\\\\2&4\\end{pmatrix}$", a:"10", alt:[],
+        steps:["Fórmula: $\\det\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix} = ad - bc$","$= (3)(4) - (1)(2)$","$= 12 - 2 = \\boxed{10}$"] },
+      { tag:"Determinantes · Diagonal", q:"$\\det\\begin{pmatrix}1&0&0\\\\0&2&0\\\\0&0&3\\end{pmatrix}$", a:"6", alt:[],
+        steps:["Propiedad: el determinante de una matriz diagonal es el producto de sus elementos diagonales","$\\det = 1\\cdot 2\\cdot 3 = \\boxed{6}$"] },
+      { tag:"Matrices · ¿Tiene inversa?", q:"$A=\\begin{pmatrix}2&1\\\\1&1\\end{pmatrix}$. ¿Cuánto es $\\det(A)$?", a:"1", alt:[],
+        steps:["$\\det(A) = (2)(1)-(1)(1) = 2-1 = \\boxed{1}$","Como $\\det(A)\\neq 0$, la matriz sí admite inversa","Si $\\det=0$, la matriz es singular y no tiene inversa"] },
+    ],
+    "Sistemas de Ecuaciones": [
+      { tag:"Sistemas · Eliminación", q:"$\\begin{cases}x + y = 5\\\\ x - y = 1\\end{cases}$  →  $x=$", a:"3", alt:[],
+        steps:["Sumamos ambas ecuaciones para eliminar $y$:","$(x+y)+(x-y) = 5+1$","$2x = 6 \\Rightarrow x = \\boxed{3}$","Sustituyendo: $y = 5-3 = 2$. Verificación: $3-2=1$ ✓"] },
+      { tag:"Sistemas · Cramer", q:"$\\begin{cases}2x+y=7\\\\x+3y=11\\end{cases}$  El determinante $D$ del sistema es:", a:"5", alt:[],
+        steps:["Formamos la matriz de coeficientes:","$D = \\det\\begin{pmatrix}2&1\\\\1&3\\end{pmatrix}$","$= (2)(3)-(1)(1) = 6-1 = \\boxed{5}$"] },
+      { tag:"Sistemas · Gauss-Jordan", q:"La forma escalonada $\\begin{pmatrix}1&0&|&3\\\\0&1&|&5\\end{pmatrix}$ indica $x=$", a:"3", alt:[],
+        steps:["La forma escalonada reducida (RREF) ya tiene la solución directa","Fila 1: $1\\cdot x + 0\\cdot y = 3 \\Rightarrow x = \\boxed{3}$","Fila 2: $0\\cdot x + 1\\cdot y = 5 \\Rightarrow y = 5$"] },
+      { tag:"Sistemas · Tres variables", q:"$\\begin{cases}x+y+z=6\\\\x-y=0\\\\y-z=0\\end{cases}$  →  $z=$", a:"2", alt:[],
+        steps:["De la ec. 2: $x=y$. De la ec. 3: $y=z$","Entonces $x=y=z$","Sustituyendo en ec. 1: $3z=6 \\Rightarrow z=\\boxed{2}$"] },
+    ],
+    "Espacio Euclidiano": [
+      { tag:"Geometría · Distancia", q:"Distancia entre $P_1(1,2)$ y $P_2(4,6)$", a:"5", alt:[],
+        steps:["$d = \\sqrt{(x_2-x_1)^2+(y_2-y_1)^2}$","$= \\sqrt{(4-1)^2+(6-2)^2} = \\sqrt{9+16}$","$= \\sqrt{25} = \\boxed{5}$"] },
+      { tag:"Geometría · Pendiente", q:"Pendiente de la recta por $(2,3)$ y $(6,7)$", a:"1", alt:[],
+        steps:["$m = \\dfrac{y_2-y_1}{x_2-x_1} = \\dfrac{7-3}{6-2} = \\dfrac{4}{4} = \\boxed{1}$","Una pendiente $m=1$ indica una recta a 45° en el plano"] },
+      { tag:"Geometría · Punto Medio", q:"Coordenada $x$ del punto medio entre $(0,0)$ y $(8,6)$", a:"4", alt:[],
+        steps:["$M = \\left(\\dfrac{x_1+x_2}{2},\\;\\dfrac{y_1+y_2}{2}\\right)$","$M_x = \\dfrac{0+8}{2} = \\boxed{4}$","$M_y = \\dfrac{0+6}{2} = 3$ → Punto medio: $(4,3)$"] },
+    ],
+    "Espacio Vectorial": [
+      { tag:"Vectores · Magnitud", q:"Magnitud del vector $\\vec{v}=(3,4)$", a:"5", alt:[],
+        steps:["$|\\vec{v}| = \\sqrt{v_x^2+v_y^2}$","$= \\sqrt{3^2+4^2} = \\sqrt{9+16} = \\sqrt{25}$","$= \\boxed{5}$ — ¡trío pitagórico 3-4-5!"] },
+      { tag:"Vectores · Producto punto", q:"$\\vec{u}=(2,3)$ y $\\vec{v}=(4,1)$. Calcula $\\vec{u}\\cdot\\vec{v}$", a:"11", alt:[],
+        steps:["$\\vec{u}\\cdot\\vec{v} = u_x v_x + u_y v_y$","$= (2)(4)+(3)(1) = 8+3 = \\boxed{11}$","Si el resultado fuera 0, los vectores serían perpendiculares"] },
+      { tag:"Vectores · Transformación Lineal", q:"Sea $T(x,y)=(2x,\\;3y)$. Segunda componente de $T(1,2)$:", a:"6", alt:[],
+        steps:["Aplicamos la transformación punto a punto:","$T(1,2) = (2\\cdot 1,\\;3\\cdot 2) = (2,\\;6)$","La segunda componente es $\\boxed{6}$"] },
+    ],
+  }
+};
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let activeSubject = null;
+let activeTopic = null;
+let pool = [];
+let current = null;
+let answered = false;
+let stats = {c:0,w:0,t:0};
+let history = [];
+let sessionN = 0;
+
+// ══════════════════════════════════════════════════════
+//  INIT PILLS
+// ══════════════════════════════════════════════════════
+function initPills() {
+  const icons = {
+    "Funciones y Variables":"📈","Límites y Continuidad":"🔍",
+    "Derivadas":"📐","La Diferencial":"Δ",
+    "Integral Indefinida":"∫","Integral Definida":"🔲",
+    "Matrices y Determinantes":"🧮","Sistemas de Ecuaciones":"⚙️",
+    "Espacio Euclidiano":"📍","Espacio Vectorial":"➡️"
+  };
+  ['calc','alg'].forEach(subj => {
+    const container = document.getElementById('pills-'+subj);
+    Object.keys(TOPICS[subj]).forEach(t => {
+      const b = document.createElement('button');
+      b.className = `topic-pill tp-${subj}`;
+      b.innerHTML = `${icons[t]||'▸'} ${t}`;
+      b.onclick = () => selectTopic(t, subj, b);
+      container.appendChild(b);
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  SUBJECT SELECT
+// ══════════════════════════════════════════════════════
+function selectSubject(s) {
+  activeSubject = s;
+  document.getElementById('card-calc').className = 'subject-card' + (s==='calc' ? ' active-calc' : '');
+  document.getElementById('card-alg').className  = 'subject-card' + (s==='alg'  ? ' active-alg'  : '');
+  document.getElementById('topics-calc').className = 'topic-section' + (s==='calc' ? ' visible' : '');
+  document.getElementById('topics-alg').className  = 'topic-section' + (s==='alg'  ? ' visible' : '');
+  document.getElementById('ex-section').className = 'ex-section';
+  // reset pills
+  document.querySelectorAll('.topic-pill').forEach(p => p.classList.remove('active'));
+  activeTopic = null;
+}
+
+// ══════════════════════════════════════════════════════
+//  TOPIC SELECT
+// ══════════════════════════════════════════════════════
+function selectTopic(t, subj, btn) {
+  activeTopic = t;
+  document.querySelectorAll('.topic-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  pool = [...TOPICS[subj][t]].sort(() => Math.random()-.5);
+  sessionN = 0;
+  document.getElementById('ex-section').className = 'ex-section visible';
+  renderResources(t, subj);
+  nextEx();
+  document.getElementById('ex-section').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ══════════════════════════════════════════════════════
+//  RESOURCES
+// ══════════════════════════════════════════════════════
+function renderResources(t, subj) {
+  const r = RESOURCES[t];
+  const col = subj === 'calc' ? 'var(--calc)' : 'var(--alg)';
+  if (!r) { document.getElementById('res-card').innerHTML=''; return; }
+  document.getElementById('res-card').innerHTML = `
+    <div class="res-title" style="color:${col}">📚 Recursos del tema: ${t}</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">▶ Videos recomendados</div>
+      <div class="res-grid">
+        ${r.videos.map(v=>`
+          <a class="res-item" href="${v.url}" target="_blank" rel="noopener">
+            <span class="res-icon">🎬</span>
+            <div><div class="res-name">${v.name}</div><div class="res-type">${v.by}</div></div>
+          </a>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">📖 Libros de referencia</div>
+      <div class="res-grid">
+        ${r.books.map(b=>`
+          <a class="res-item" href="${b.url}" target="_blank" rel="noopener">
+            <span class="res-icon">📘</span>
+            <div><div class="res-name">${b.name}</div><div class="res-type">${b.by}</div></div>
+          </a>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  EXERCISE
+// ══════════════════════════════════════════════════════
+function nextEx() {
+  if (!activeTopic) return;
+  if (!pool.length) pool = [...TOPICS[activeSubject][activeTopic]].sort(()=>Math.random()-.5);
+  current = pool.pop();
+  answered = false;
+  sessionN++;
+
+  const isAlg = activeSubject === 'alg';
+  document.getElementById('ex-accent').className = 'ex-card-accent' + (isAlg ? ' alg' : '');
+  document.getElementById('ex-tag').className = 'ex-tag ' + (isAlg ? 'tag-alg' : 'tag-calc');
+  document.getElementById('ex-tag').textContent = current.tag;
+  document.getElementById('ex-q').innerHTML = current.q;
+
+  const inp = document.getElementById('ans');
+  inp.value=''; inp.className='answer-input'; inp.disabled=false; inp.focus();
+  document.getElementById('fb').className = 'feedback';
+  document.getElementById('btn-row').style.display = 'none';
+  updateProgress();
+  if (window.MathJax) MathJax.typesetPromise([document.getElementById('ex-q')]);
+}
+
+function norm(s){ return s.toLowerCase().replace(/\s/g,'').replace(/[×·]/g,'*').replace(/÷/g,'/'); }
+
+function checkAns() {
+  if (answered || !current) return;
+  const inp = document.getElementById('ans');
+  const val = inp.value.trim();
+  if (!val) return;
+  answered = true; inp.disabled = true;
+  stats.t++;
+
+  const ok = norm(val)===norm(current.a) || current.alt.some(x=>norm(val)===norm(x));
+  if (ok) stats.c++; else stats.w++;
+
+  inp.classList.add(ok?'correct':'wrong');
+  showFeedback(ok, val);
+  addHistory(ok, val);
+  updateScores();
+  document.getElementById('btn-row').style.display='flex';
+}
+
+function showSol() {
+  if (answered) { nextEx(); return; }
+  answered = true; stats.t++; stats.w++;
+  const inp = document.getElementById('ans');
+  inp.disabled=true; inp.classList.add('wrong');
+  showFeedback(false, null, true);
+  addHistory(false,'(solución directa)');
+  updateScores();
+  document.getElementById('btn-row').style.display='flex';
+}
+
+function showFeedback(ok, val, isSol=false) {
+  const fb = document.getElementById('fb');
+  fb.className = 'feedback ' + (ok ? 'show-ok' : 'show-err');
+  document.getElementById('fb-title').innerHTML = ok
+    ? '✓ ¡Correcto! Muy bien.'
+    : isSol
+      ? `Solución detallada — respuesta: <code style="background:var(--red-bg);padding:2px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace">${current.a}</code>`
+      : `✗ Incorrecto — la respuesta correcta es: <code style="background:var(--red-bg);padding:2px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace">${current.a}</code>`;
+  document.getElementById('fb-steps').innerHTML = current.steps.map((s,i)=>`
+    <div class="step">
+      <span class="step-num">Paso ${i+1}</span>
+      <span class="step-text">${s}</span>
+    </div>`).join('');
+  if (window.MathJax) MathJax.typesetPromise([fb]);
+}
+
+// ══════════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════════
+function updateScores() {
+  document.getElementById('sc').textContent = stats.c;
+  document.getElementById('sw').textContent = stats.w;
+}
+
+function updateProgress() {
+  const n = ((sessionN-1)%10)+1;
+  document.getElementById('prog-fill').style.width = (n/10*100)+'%';
+  document.getElementById('prog-txt').textContent = n+' / 10';
+}
+
+function addHistory(ok, ans) {
+  history.unshift({ok, q:current.q, ans, exp:current.a});
+  if (history.length>8) history.pop();
+  const list = document.getElementById('hist-list');
+  list.innerHTML = history.length ? history.map(h=>`
+    <div class="hist-item ${h.ok?'hok':'herr'}">
+      <span>${h.ok?'✅':'❌'}</span>
+      <span class="hist-q">${h.q}</span>
+      <span class="hist-a">${h.ok?h.ans:h.exp}</span>
+    </div>`).join('')
+    : '<div class="empty-msg">Aún no has respondido ningún ejercicio.</div>';
+  if (window.MathJax) MathJax.typesetPromise([list]);
+}
+
+// Enter key
+document.getElementById('ans').addEventListener('keydown', e=>{
+  if (e.key==='Enter') { if(!answered) checkAns(); else nextEx(); }
+});
+
+initPills();
+</script>
+</body>
+</html>
